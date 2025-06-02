@@ -2,8 +2,9 @@ from invoke.tasks import task
 
 
 @task
-def hostlibtest(c, clean=False, configure=False, build=False, run=False):
+def hostlibtest(c, clean=False, configure=False, build=False, run=False, coverage=False):
     dir = "build_hostlibtest"
+    cov = "ON" if coverage else "OFF"
 
     if clean:
         c.run(f"rm -rf {dir}")
@@ -17,9 +18,12 @@ def hostlibtest(c, clean=False, configure=False, build=False, run=False):
             '-DCMAKE_CXX_FLAGS="-D__HIP_HCC_COMPAT_MODE__=1" '
             "-DTensile_CPU_THREADS=8 "
             "-DTensile_ROOT=`pwd`/Tensile "
-            "-DTensile_VERBOSE=1", pty=True
+            "-DTensile_VERBOSE=1"
+            f"-DTENSILE_ENABLE_COVERAGE={cov}", 
+            pty=True
         )
     if build:
         c.run(f"cmake --build `pwd`/{dir} -j4", pty=True)
     if run:
-        c.run("./{dir}/TensileTest")
+        # c.run("./{dir}/TensileTest")
+        c.run("./{dir}/TensileTests")
