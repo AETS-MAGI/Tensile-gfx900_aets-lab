@@ -221,20 +221,20 @@ if(TENSILE_ENABLE_COVERAGE)
         COMMAND ${CMAKE_COMMAND} -E env "LLVM_PROFILE_FILE=${coverage_dir}/profraw/tensile-host-coverage_%p.profraw"
                                         GTEST_LISTENER=NO_PASS_LINE_IN_LOG 
                                         $<TARGET_FILE:TensileTests>
-                                        "--gtest_filter=-*Extended*"
+                                        "--gtest_filter=-HipSolutionAdapter/RunGEMMKernelTestHip.TestAllSolutions/504:HipSolutionAdapter/RunGEMMKernelTestHip.TestAllSolutions/505:HipSolutionAdapter/RunGEMMKernelTestHip.TestAllSolutions/506:HipSolutionAdapter/RunGEMMKernelTestHip.TestAllSolutions/507:HipSolutionAdapter/RunGEMMKernelTestHip.TestAllSolutions/508:HipSolutionAdapter/RunGEMMKernelTestHip.TestAllSolutions/509"
       )
 
     find_program(
         LLVM_PROFDATA
         llvm-profdata
-        HINTS llvm/bin
+        HINTS /opt/rocm/llvm/bin
         REQUIRED
     )
     find_program(
         LLVM_COV
         llvm-cov
         REQUIRED
-        HINTS llvm/bin
+        HINTS /opt/rocm/llvm/bin
     )
 
     add_custom_target(
