@@ -206,7 +206,6 @@ if(TENSILE_ENABLE_COVERAGE)
     target_link_options(TensileHost PRIVATE -fprofile-instr-generate)
     message(STATUS "Applied coverage flags to TensileHost.")
 
-    # Apply coverage flags to TensileTests
     target_compile_options(TensileTests PRIVATE -g -O0 -fprofile-instr-generate -fcoverage-mapping)
     target_link_options(TensileTests PRIVATE -fprofile-instr-generate)
     message(STATUS "Applied coverage flags to TensileTests.")
@@ -221,7 +220,6 @@ if(TENSILE_ENABLE_COVERAGE)
         COMMAND ${CMAKE_COMMAND} -E env "LLVM_PROFILE_FILE=${coverage_dir}/profraw/tensile-host-coverage_%p.profraw"
                                         GTEST_LISTENER=NO_PASS_LINE_IN_LOG 
                                         $<TARGET_FILE:TensileTests>
-                                        "--gtest_filter=-HipSolutionAdapter/RunGEMMKernelTestHip.TestAllSolutions/504:HipSolutionAdapter/RunGEMMKernelTestHip.TestAllSolutions/505:HipSolutionAdapter/RunGEMMKernelTestHip.TestAllSolutions/506:HipSolutionAdapter/RunGEMMKernelTestHip.TestAllSolutions/507:HipSolutionAdapter/RunGEMMKernelTestHip.TestAllSolutions/508:HipSolutionAdapter/RunGEMMKernelTestHip.TestAllSolutions/509"
       )
 
     find_program(

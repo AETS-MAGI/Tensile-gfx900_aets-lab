@@ -18,12 +18,14 @@ def hostlibtest(c, clean=False, configure=False, build=False, run=False, coverag
             '-DCMAKE_CXX_FLAGS="-D__HIP_HCC_COMPAT_MODE__=1" '
             "-DTensile_CPU_THREADS=8 "
             "-DTensile_ROOT=`pwd`/Tensile "
-            "-DTensile_VERBOSE=1"
+            "-DTensile_VERBOSE=1 "
             f"-DTENSILE_ENABLE_COVERAGE={cov}", 
             pty=True
         )
     if build:
         c.run(f"cmake --build `pwd`/{dir} -j4", pty=True)
     if run:
-        # c.run("./{dir}/TensileTest")
-        c.run("./{dir}/TensileTests")
+        if coverage:
+            c.run(f"cmake --build `pwd`/{dir} --target coverage --parallel", pty=True)
+        else:
+            c.run("./{dir}/TensileTests")
