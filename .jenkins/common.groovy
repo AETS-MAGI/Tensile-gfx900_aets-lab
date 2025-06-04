@@ -26,7 +26,7 @@
 // If you are interested in running your own Jenkins,
 // please raise a github issue for assistance.
 
-def runCompileCommand(platform, project, jobName, boolean debug=false)
+def runCompileCommand(platform, project, jobName, boolean debug=false, boolean codecov=false)
 {
     project.paths.construct_build_prefix()
 
@@ -51,6 +51,8 @@ def runCompileCommand(platform, project, jobName, boolean debug=false)
         sclCommand = "source scl_source enable gcc-toolset-12"
     }
 
+    String codeCovString = codecov ? "-DBUILD_CODE_COVERAGE=ON" : ""
+
     def command = """#!/usr/bin/env bash
             set -ex
             hostname
@@ -69,7 +71,9 @@ def runCompileCommand(platform, project, jobName, boolean debug=false)
                 -DCMAKE_CXX_COMPILER=${compiler} \
                 -DCMAKE_CXX_FLAGS="-D__HIP_HCC_COMPAT_MODE__=1" \
                 -DTensile_CPU_THREADS=${buildThreads} \
-                -DTensile_ROOT=`pwd`/../Tensile
+                -DTensile_ROOT=`pwd`/../Tensile \
+                ${codeCovString}
+
             
             make -j\$((`nproc`<16 ? `nproc` : 16))
 
@@ -79,6 +83,20 @@ def runCompileCommand(platform, project, jobName, boolean debug=false)
     platform.runCommand(this, command)
 }
 
+def runCodecovTestCommand(platform, project, jobName)
+{
+    def command = "cd ${project.paths.project_build_prefix} && make coverage"
+    platform.runCommand(this, command)
+
+    this.publishHTML([allowMissing: false,
+        alwaysLinkToLastBuild: false,
+        keepAll: false,
+        reportDir: "${project.paths.project_build_prefix}/coverage-report",
+        reportFiles: "index.html",
+        reportName: "Code coverage report",
+        reportTitles: "Code coverage report"
+    ])
+}
 
 def runTestCommand(platform, project, jobName, testMark, boolean runHostTest=true, boolean runUnitTest=true, boolean runToxTest=true)
 {
