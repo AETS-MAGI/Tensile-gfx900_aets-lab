@@ -158,7 +158,6 @@ if(TENSILE_USE_HIP)
     add_subdirectory(hip)
 endif()
 
-# Target file
 add_executable(TensileTests ${test_sources})
 
 if(NOT TENSILE_DISABLE_CTEST)
@@ -225,14 +224,14 @@ if(TENSILE_ENABLE_COVERAGE)
     find_program(
         LLVM_PROFDATA
         llvm-profdata
-        HINTS /opt/rocm/llvm/bin
+        HINTS llvm/bin
         REQUIRED
     )
     find_program(
         LLVM_COV
         llvm-cov
         REQUIRED
-        HINTS /opt/rocm/llvm/bin
+        HINTS llvm/bin
     )
 
     add_custom_target(
