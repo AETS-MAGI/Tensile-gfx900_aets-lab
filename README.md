@@ -1,5 +1,7 @@
 # Tensile
 
+[English](README.md) | [日本語](README.ja.md)
+
 > [!IMPORTANT]
 > This repository is an experimental lab fork: `AETS-MAGI/Tensile-gfx900_aets-lab`.
 >
@@ -17,3 +19,8 @@ Tensile acts as the performance backbone for a wide variety of 'compute' applica
 
 > [!NOTE]
 > The published documentation is available at [Tensile](https://rocm.docs.amd.com/projects/Tensile/en/latest/index.html) in an organized, easy-to-read format, with search and a table of contents. The documentation source files reside in the `Tensile/docs/src` folder of this repository. As with all ROCm projects, the documentation is open source. For more information on contributing to the documentation, see [Contribute to ROCm documentation](https://rocm.docs.amd.com/en/latest/contribute/contributing.html).
+
+## Related repositories
+
+- Setup and validation workspace: https://github.com/AETS-MAGI/ROCm-MI25-build
+- Paired rocBLAS fork: https://github.com/AETS-MAGI/rocBLAS-gfx900_aets-lab
