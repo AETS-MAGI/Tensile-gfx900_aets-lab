@@ -1,5 +1,13 @@
 # Tensile
 
+> [!IMPORTANT]
+> This repository is an experimental lab fork: `AETS-MAGI/Tensile-gfx900_aets-lab`.
+>
+> - Fork source: `ROCm/Tensile`
+> - Purpose: gfx900/MI25 bring-up and ROCm runtime investigation
+> - Branch policy: `main` as baseline, experiments on dedicated branches (for example `gfx900-bringup`)
+> - License note: upstream `LICENSE` and copyright notices are preserved
+
 > [!CAUTION]
 > The Tensile repository is retired, please use the [ROCm/rocm-libraries](https://github.com/ROCm/rocm-libraries) repository
 
