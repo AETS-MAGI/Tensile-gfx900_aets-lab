@@ -7,7 +7,7 @@
 >
 > - Fork source: `ROCm/Tensile`
 > - Purpose: gfx900/MI25 bring-up and ROCm runtime investigation
-> - Branch policy: `main` as baseline, experiments on dedicated branches (for example `gfx900-bringup`)
+> - Branch policy: `main` as baseline, and ongoing experiments on `vega-int8-probe`
 > - License note: upstream `LICENSE` and copyright notices are preserved
 
 > [!CAUTION]
