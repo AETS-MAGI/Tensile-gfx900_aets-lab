@@ -98,3 +98,11 @@ Interpretation:
 - `.dat` still looks like initialization burst.
 - `.hsaco` spans a wider window and is a better dispatch-side candidate signal.
 - This is still not final dispatch proof by itself, but it narrows the search area.
+
+Update from rocprofv3 probe:
+
+- `kernel_trace.csv` dispatch evidence is now available on tinyllama runs.
+- Current dispatch names are predominantly ggml-hip kernels (`mul_mat_q`, `mul_mat_vec_q`,
+  `flash_attn_*`, `quantize_*`) and do not explicitly expose Tensile naming.
+- So, while "dispatch evidence exists" is now true, "Tensile dispatch directly confirmed"
+  remains open and should be treated as the next gate.
