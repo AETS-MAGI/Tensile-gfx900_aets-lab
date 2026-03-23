@@ -135,3 +135,48 @@ Layer/trace granularity update:
   - GEMM/backend-like lines remained zero
 - Practical setting is fixed to `ROCBLAS_LAYER=9` (trace + internal),
   and the next gate is workload-side path discovery, not layer tweaking.
+
+Workload-side gate update:
+
+- High-density sweep on `qwen2.5:7b` / `deepseek-r1:14b`
+  (`NUM_PREDICT=512`, `long|math|code`) stayed at:
+  - `direct_rocblas_or_tensile_dispatch=0`
+  - `link_status=indirect_link_only_same_scenario`
+  - summary: `g4_workload_path_sweep_20260324_023631.txt`
+- `gpt-oss:latest` single-case probe reached:
+  - `direct_rocblas_or_tensile_dispatch=1`
+  - `rocblas_trace_gemm_lines=1002`
+  - `kernel_tensile_like_rows=167`
+  - summary: `g4_link_summary_gpt-oss_latest_20260324_024249.txt`
+
+Interpretation update:
+
+- "Dispatch evidence exists but direct Tensile link is missing" is no longer true globally.
+- We now have one confirmed direct-dispatch anchor (`gpt-oss`), while
+  tinyllama/qwen/deepseek remain indirect under current GGUF paths.
+- This supports a two-track workflow:
+  1) keep lightweight GGUF models for stability/regression checks
+  2) use `gpt-oss` to maintain direct rocBLAS/Tensile visibility for low-level tuning.
+
+Shape-priority update:
+
+- Added shape extraction helper:
+  - `ROCm-MI25-build/summarize-rocblas-gemm-shapes.sh`
+- Current top shapes (from `gpt-oss` trace):
+  - `512x512x2880`
+  - `4096x512x64` / `64x512x4096`
+  - `2880x512x4096`, `4096x512x2880`
+- These shapes become the first candidates for Tensile-side inspection.
+
+Formal reflection (fact / interpretation / implication):
+
+1. Fact
+   - `gpt-oss:latest` produced repeated `rocblas_gemm_ex` and
+     `rocblas_gemm_tensile_backend` evidence in the same scenario.
+   - `direct_rocblas_or_tensile_dispatch=1` is now observed.
+2. Interpretation
+   - tinyllama/qwen/deepseek stayed indirect, while another workload reached direct naming.
+   - The dominant factor is likely workload/path shape, not trace-layer toggles.
+3. Implication
+   - A direct-dispatch probe baseline now exists for Tensile-side verification.
+   - Next comparisons should anchor on this case when evaluating model/precision/path changes.
