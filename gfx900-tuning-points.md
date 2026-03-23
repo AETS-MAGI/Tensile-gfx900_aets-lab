@@ -78,3 +78,23 @@ Rule:
 
 - Next practical task: dispatch evidence + type map refinement.
 - Delay kernel implementation changes until evidence is complete.
+
+## 5. New timing split evidence (2026-03-24)
+
+Instrumentation added in `ROCm-MI25-build`:
+
+- `g4-fallback-strace-check.sh` (timestamped strace + optional rocBLAS trace)
+- `summarize-fallback-phases.sh` (pid-level timing summary)
+
+Latest tinyllama probe:
+
+- `fallback_phase_summary_tinyllama_latest_20260324_014707.tsv`
+- observed split:
+  - fallback `.dat`: span `0.035186s`
+  - fallback `.hsaco`: span `1.302794s`
+
+Interpretation:
+
+- `.dat` still looks like initialization burst.
+- `.hsaco` spans a wider window and is a better dispatch-side candidate signal.
+- This is still not final dispatch proof by itself, but it narrows the search area.
