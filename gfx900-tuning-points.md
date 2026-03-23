@@ -106,3 +106,16 @@ Update from rocprofv3 probe:
   `flash_attn_*`, `quantize_*`) and do not explicitly expose Tensile naming.
 - So, while "dispatch evidence exists" is now true, "Tensile dispatch directly confirmed"
   remains open and should be treated as the next gate.
+
+Integrated link status update:
+
+- `g4-fallback-dispatch-link-check.sh` now runs fallback(strace) + dispatch(rocprofv3)
+  in one condition and emits a unified gate summary.
+- Latest tinyllama run reports:
+  - `fallback_confirmed=1`
+  - `dispatch_confirmed=1`
+  - `direct_rocblas_or_tensile_dispatch=0`
+  - `link_status=indirect_link_only_same_scenario`
+- Interpretation:
+  - Catalog-read + dispatch evidence is now co-captured.
+  - Direct Tensile dispatch evidence is still the remaining gate.
