@@ -124,3 +124,14 @@ Integrated link status update:
 - Interpretation:
   - Catalog-read + dispatch evidence is now co-captured on two models.
   - Direct Tensile dispatch evidence is still the remaining gate.
+
+Layer/trace granularity update:
+
+- `ROCm-MI25-build/g4-rocblas-layer-sweep.sh` now sweeps
+  `ROCBLAS_LAYER=1,8,9,15,63` for the same workload.
+- On both tinyllama and qwen2.5:7b:
+  - layer `8` alone produced no trace lines
+  - layer `1/9/15/63` stayed at handle-only logs (`rocblas_create_handle`)
+  - GEMM/backend-like lines remained zero
+- Practical setting is fixed to `ROCBLAS_LAYER=9` (trace + internal),
+  and the next gate is workload-side path discovery, not layer tweaking.
