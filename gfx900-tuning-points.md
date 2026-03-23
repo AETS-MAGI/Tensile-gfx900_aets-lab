@@ -237,3 +237,36 @@ Additional batch comparison (`num_batch=512,1024`):
   - `4096x1024x2880`
 - implication for Tensile-side prioritization:
   - maintain shape candidates as batch-conditioned families, not one fixed list.
+
+## 7. Canonical anchor freeze (baseline vs side)
+
+Canonical profile reference:
+
+- `ROCm-MI25-build/ROCm-MI25-tips/G4_gptoss_anchor_profile.md`
+
+Baseline lane (default):
+
+- `MODEL=gpt-oss:latest`
+- `ROCBLAS_LAYER=9`
+- `NUM_CTX=8192`
+- `NUM_BATCH=512`
+- `NUM_PREDICT={64,128,256}`
+- summary: `g4_gptoss_anchor_shape_sweep_gpt-oss_latest_20260324_034636.txt`
+- stable outcomes:
+  - `direct_hits=3/3`
+  - `kernel_tensile_like_rows=167` (all cases)
+  - dominant `*x512x*` shape family
+
+Side lane (shape-shift sensitivity):
+
+- `NUM_BATCH=1024` + 1024-target shapes
+- summary: `g4_gptoss_anchor_shape_sweep_gpt-oss_latest_20260324_035250.txt`
+- stable outcomes:
+  - `direct_hits=3/3`
+  - `kernel_tensile_like_rows=167` (all cases)
+  - dominant `*x1024x*` shape family
+
+Operational rule:
+
+- Use baseline lane for main tuning decisions.
+- Use side lane to check whether observed behavior survives batch-conditioned shape migration.
