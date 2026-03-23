@@ -116,6 +116,11 @@ Integrated link status update:
   - `dispatch_confirmed=1`
   - `direct_rocblas_or_tensile_dispatch=0`
   - `link_status=indirect_link_only_same_scenario`
+- Latest qwen2.5:7b run reports:
+  - `fallback_confirmed=1`
+  - `dispatch_confirmed=1`
+  - `direct_rocblas_or_tensile_dispatch=0`
+  - `link_status=indirect_link_only_same_scenario`
 - Interpretation:
-  - Catalog-read + dispatch evidence is now co-captured.
+  - Catalog-read + dispatch evidence is now co-captured on two models.
   - Direct Tensile dispatch evidence is still the remaining gate.
