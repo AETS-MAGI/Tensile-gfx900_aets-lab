@@ -341,3 +341,31 @@ Implication:
 - In this tested profile set, prompt style/length does not materially move
   the baseline512 Tensile-observed shape family.
 - The next single-knob target should be extended `num_predict` ranges.
+
+## 11. Single-knob sweep result: extended `num_predict` under baseline512
+
+Run setup:
+
+- baseline fixed: `MODEL=gpt-oss:latest`, `NUM_CTX=8192`,
+  `NUM_BATCH=512`, `KEEP_ALIVE=5m`
+- `NUM_PREDICT={64,128,256,512,1024}`
+- compare note:
+  - `g4_baseline512_numpredict_sweep_compare_20260324_043625.txt`
+
+Observed:
+
+- `direct_rocblas_or_tensile_dispatch=1` for all 5 cases
+- `kernel_tensile_like_rows=167` for all 5 cases
+- top-3 shape hits unchanged for all 5 cases:
+  - `512x512x2880=192`
+  - `2880x512x4096=96`
+  - `4096x512x2880=96`
+- generation-side evidence still scales:
+  - `eval_count` follows requested decode length until stop condition
+  - `1024` case ended at `eval_count=797` with `done_reason=stop`
+
+Implication:
+
+- Under baseline512, extended decode length did not materially change the
+  observed Tensile-linked shape family in current trace mode.
+- Next step should isolate prefill and decode observation windows.
