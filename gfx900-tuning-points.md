@@ -1,86 +1,80 @@
 # Tensile gfx900 Tuning Points (MI25)
 
-最終更新: 2026-03-24
-対象: `ROCm-repos_AETS/Tensile`
+Last updated: 2026-03-24
+Target: `ROCm-repos_AETS/Tensile`
 
-## 1. 位置づけ
+## 1. Scope
 
-Tensile 側は、現行 LLM 推論で **fallback catalog / hsaco の実アクセス証跡** が取れているため、gfx900 最適化の主戦場。
+Tensile is currently the most relevant low-level area for gfx900 tuning,
+because fallback catalog/hsaco asset reads are confirmed in runtime traces.
 
-ただし現時点の `fallback_confirmed` は「catalog read」段階であり、`dispatch` 確認は未完。
+Important caveat:
 
-## 2. 優先度つき調整点
+- Current `fallback_confirmed` evidence is catalog-read level.
+- Dispatch-level confirmation is still pending.
 
-## P0: 型別 catalog read の固定化
+## 2. Priority order
 
-目的:
+### P0: Stable type-level catalog-read map
 
-- fallback 資産アクセスを `Type_*` 単位で追跡可能にする
+Goal:
 
-確認項目:
+- Track fallback asset reads at `Type_*` granularity.
 
-- run ごとの `Type_HH`, `Type_HS_HPA` などの出現回数
-- モデル差（tinyllama / qwen2.5:7b）で型分布がどう変わるか
+Checkpoints:
 
-成果物:
+- Per-run counts for `Type_HH`, `Type_HS_HPA`, etc.
+- Type distribution differences by model (tinyllama vs qwen2.5:7b)
 
-- 型別カウント表（run_id 付き）
-- `fallback_dat_openat` / `fallback_hsaco_openat` の推移
+Deliverables:
 
-## P1: dispatch 境界の可視化
+- Type count table with run IDs
+- `fallback_dat_openat` / `fallback_hsaco_openat` trend
 
-目的:
+### P1: Dispatch boundary evidence
 
-- 「catalog 読み込み」と「実際の kernel 選択・実行」を分離する
+Goal:
 
-最小到達:
+- Separate catalog load from actual kernel selection/execution.
 
-- 少なくとも1ケースで、呼び出しサイズと対応する実行側証跡を紐付ける
+Minimum target:
 
-注記:
+- At least one case linking workload shape to dispatch-side evidence.
 
-- ここが取れると `fallback_confirmed` の粒度が一段上がる
+### P2: Lazy-loading and startup cost contribution
 
-## P2: lazy-loading と startup コスト
+Goal:
 
-目的:
+- Estimate how much catalog initialization affects TTFT.
 
-- 初回遅延（TTFT）に効く可能性のある catalog 初期化コストを把握する
+Observed premise:
 
-観測前提:
+- `keep_alive=10m` strongly improves TTFT.
+- Cold-start overhead is likely significant.
 
-- `keep_alive=10m` が TTFT に有利（main-node confirmed）
-- つまり cold start コストの寄与が大きい
+Checkpoints:
 
-確認項目:
+- Cold vs warm fallback open patterns
+- First-run gap under `keep_alive=0s` vs `10m`
 
-- cold/warm で fallback 資産 open パターンがどう変わるか
-- `0s` と `10m` での初回 run 乖離
+### P3: Asset focus list before kernel edits
 
-## P3: kernel 資産の整理ルール
+Goal:
 
-目的:
+- Focus on actively used assets before touching kernel code.
 
-- 実際に使う資産と参照のみ資産を区別し、調査対象を絞る
+Rule:
 
-方針:
+- Do not delete assets first.
+- Build a "priority observation list" from actual access evidence.
 
-- いきなり削除しない
-- まずアクセス実績ベースで「重点観測リスト」を作る
+## 3. Link to current benchmark findings
 
-## 3. 実測との接続（2026-03-24）
+- tinyllama and qwen2.5:7b both benefit from `keep_alive=10m`.
+- tinyllama throughput can improve with `num_thread=6`.
+- Cross-model conservative baseline remains `safe + keep_alive=10m + num_thread=4`.
 
-[main-node confirmed]
+## 4. Current decision
 
-- tinyllama / qwen2.5:7b とも `keep_alive=10m` が TTFT を大幅改善
-- tinyllama で `num_thread=6` は tok/s 優位、`4` はバランス
-
-解釈:
-
-- Tensile 側の改善は、cold-start 影響と分離して評価する必要がある
-- 比較の既定条件は `safe + keep_alive=10m + num_thread=4`
-
-## 4. 当面の判断
-
-- 次の実作業は「dispatch 証跡化」と「型別マップ作成」
-- kernel 実装改変は、その証跡が揃ってから着手
+- Next practical task: dispatch evidence + type map refinement.
+- Delay kernel implementation changes until evidence is complete.
