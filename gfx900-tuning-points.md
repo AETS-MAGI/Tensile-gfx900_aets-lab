@@ -270,3 +270,74 @@ Operational rule:
 
 - Use baseline lane for main tuning decisions.
 - Use side lane to check whether observed behavior survives batch-conditioned shape migration.
+
+## 8. Single-knob sweep result: `num_ctx` under baseline512
+
+Run:
+
+- `MODEL=gpt-oss:latest NUM_PREDICT_LIST=128 NUM_CTX_LIST=4096,6144,8192,12288 NUM_BATCH_LIST=512 TARGET_SHAPES='512x512x2880,2880x512x4096,4096x512x2880' KEEP_ALIVE_LIST=5m RUNS_PER_CASE=1 ./g4-gptoss-anchor-shape-sweep.sh`
+- summary:
+  - `g4_gptoss_anchor_shape_sweep_gpt-oss_latest_20260324_040223.txt`
+
+Observed (all 4 ctx cases):
+
+- `direct_rocblas_or_tensile_dispatch=1`
+- `kernel_tensile_like_rows=167`
+- top-3 shape hits unchanged:
+  - `512x512x2880=192`
+  - `2880x512x4096=96`
+  - `4096x512x2880=96`
+
+Implication:
+
+- In this tested range, `num_ctx` does not materially move the baseline512
+  shape-family observation.
+- The next sensitive knobs are likely `num_thread`, `keep_alive`, prompt profile, and `num_predict`.
+
+## 9. Single-knob sweep result: `num_thread` under baseline512
+
+Run:
+
+- `MODEL=gpt-oss:latest NUM_PREDICT_LIST=128 NUM_CTX_LIST=8192 NUM_BATCH_LIST=512 NUM_THREAD_LIST=2,4,6,8 TARGET_SHAPES='512x512x2880,2880x512x4096,4096x512x2880' KEEP_ALIVE_LIST=5m RUNS_PER_CASE=1 ./g4-gptoss-anchor-shape-sweep.sh`
+- summary:
+  - `g4_gptoss_anchor_shape_sweep_gpt-oss_latest_20260324_040941.txt`
+
+Observed (all 4 thread cases):
+
+- `direct_rocblas_or_tensile_dispatch=1`
+- `kernel_tensile_like_rows=167`
+- top-3 shape hits unchanged:
+  - `512x512x2880=192`
+  - `2880x512x4096=96`
+  - `4096x512x2880=96`
+
+Implication:
+
+- In this tested range, `num_thread` does not materially move the baseline512
+  shape-family observation.
+- Next knobs should move to prompt profile and extended `num_predict` ranges.
+
+## 10. Single-knob sweep result: prompt profile under baseline512
+
+Run setup:
+
+- baseline fixed: `MODEL=gpt-oss:latest`, `NUM_PREDICT=128`, `NUM_CTX=8192`,
+  `NUM_BATCH=512`, `KEEP_ALIVE=5m`
+- profiles: `short`, `long`, `code`, `math`
+- compare note:
+  - `g4_baseline512_prompt_profile_sweep_compare_20260324_042420.txt`
+
+Observed (all 4 profiles):
+
+- `direct_rocblas_or_tensile_dispatch=1`
+- `kernel_tensile_like_rows=167`
+- top-3 shape hits unchanged:
+  - `512x512x2880=192`
+  - `2880x512x4096=96`
+  - `4096x512x2880=96`
+
+Implication:
+
+- In this tested profile set, prompt style/length does not materially move
+  the baseline512 Tensile-observed shape family.
+- The next single-knob target should be extended `num_predict` ranges.
