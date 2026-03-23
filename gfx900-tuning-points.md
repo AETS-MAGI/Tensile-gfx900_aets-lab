@@ -180,3 +180,60 @@ Formal reflection (fact / interpretation / implication):
 3. Implication
    - A direct-dispatch probe baseline now exists for Tensile-side verification.
    - Next comparisons should anchor on this case when evaluating model/precision/path changes.
+
+## 6. Anchor-shape sweep entrypoint (2026-03-24)
+
+To move from "single proof" to repeatable comparison, the main-node probe stack
+now supports runtime knob sweeps with fixed shape targets.
+
+Updated runtime knobs across G4 scripts:
+
+- `NUM_CTX`
+- `NUM_BATCH`
+- `NUM_THREAD`
+- `KEEP_ALIVE`
+
+New sweep script:
+
+- `ROCm-MI25-build/g4-gptoss-anchor-shape-sweep.sh`
+
+Role in Tensile-side workflow:
+
+- keeps anchor condition stable (`gpt-oss:latest`, `ROCBLAS_LAYER=9`)
+- runs case matrices through the same link gate
+- records per-case hit counts for current top-priority shapes:
+  - `512x512x2880`
+  - `4096x512x64`
+  - `64x512x4096`
+  - `2880x512x4096`
+  - `4096x512x2880`
+
+Practical implication:
+
+- We can rank runtime settings by shape-level evidence density before touching
+  Tensile assets, then narrow low-level tuning to shapes that remain dominant.
+
+Validation snapshot (main-node, 2026-03-24):
+
+- run:
+  - `MODEL=gpt-oss:latest NUM_PREDICT_LIST=128 NUM_CTX_LIST=8192 NUM_BATCH_LIST=512 KEEP_ALIVE_LIST=5m RUNS_PER_CASE=1 ./g4-gptoss-anchor-shape-sweep.sh`
+- summary:
+  - `ROCm-MI25-build/vega_path_check_logs/g4_gptoss_anchor_shape_sweep_gpt-oss_latest_20260324_033556.txt`
+- key metrics:
+  - `direct_hits=1`
+  - `kernel_tensile_like_rows=167`
+  - target hits:
+    - `512x512x2880=192`
+    - `2880x512x4096=96`
+    - `4096x512x2880=96`
+
+Additional batch comparison (`num_batch=512,1024`):
+
+- summary:
+  - `ROCm-MI25-build/vega_path_check_logs/g4_gptoss_anchor_shape_sweep_gpt-oss_latest_20260324_033756.txt`
+- both cases kept direct-dispatch evidence, but shape family moved with `N`:
+  - `512x1024x2880`
+  - `2880x1024x4096`
+  - `4096x1024x2880`
+- implication for Tensile-side prioritization:
+  - maintain shape candidates as batch-conditioned families, not one fixed list.
