@@ -569,3 +569,75 @@ Operational next step:
 - Split per-shape observation notes by Queue-A/B/C and keep the same anchor
   settings (`gpt-oss`, baseline512, `ROCBLAS_LAYER=9`, `keep_alive>=10s`).
 - Promote only stable findings to low-level asset/kernel inspection.
+
+Update:
+
+- Queue-A per-shape split is now available in rocBLAS-side notes:
+  - `/home/limonene/ROCm-project/ROCm-repos_AETS/rocBLAS/shape-observations/shape_512x512x2880.md`
+  - `/home/limonene/ROCm-project/ROCm-repos_AETS/rocBLAS/shape-observations/shape_2880x512x4096.md`
+  - `/home/limonene/ROCm-project/ROCm-repos_AETS/rocBLAS/shape-observations/shape_4096x512x2880.md`
+- Queue-B/C shape families are now visible in full-shape prefill/full compare TSVs:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/rocblas_shape_prefill_full_compare_g4_rocblas_trace_gpt-oss_latest_20260325_011553__g4_rocblas_trace_gpt-oss_latest_20260325_011629_20260325_012104.tsv`
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/rocblas_shape_prefill_full_compare_g4_rocblas_trace_gpt-oss_latest_20260325_011411__g4_rocblas_trace_gpt-oss_latest_20260325_011439_20260325_012104.tsv`
+- Queue-B/C per-shape notes are now added as well:
+  - `/home/limonene/ROCm-project/ROCm-repos_AETS/rocBLAS/shape-observations/shape_512x93x2880.md`
+  - `/home/limonene/ROCm-project/ROCm-repos_AETS/rocBLAS/shape-observations/shape_32x512x2880.md`
+  - `/home/limonene/ROCm-project/ROCm-repos_AETS/rocBLAS/shape-observations/shape_4608x512x64.md`
+  - `/home/limonene/ROCm-project/ROCm-repos_AETS/rocBLAS/shape-observations/shape_64x512x4608.md`
+  - `/home/limonene/ROCm-project/ROCm-repos_AETS/rocBLAS/shape-observations/shape_8192x512x64.md`
+  - `/home/limonene/ROCm-project/ROCm-repos_AETS/rocBLAS/shape-observations/shape_64x512x8192.md`
+
+Update 2:
+
+- Kernel candidate narrowing from rocprof summary pairs is now available:
+  - helper: `/home/limonene/ROCm-project/ROCm-MI25-build/summarize-kernel-candidates.sh`
+  - baseline output:
+    - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/kernel_candidates_rocprofv3_summary_gpt-oss_latest_20260325_011606__rocprofv3_summary_gpt-oss_latest_20260325_011645_20260325_013150.tsv`
+  - side output:
+    - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/kernel_candidates_rocprofv3_summary_gpt-oss_latest_20260325_011425__rocprofv3_summary_gpt-oss_latest_20260325_011502_20260325_013150.tsv`
+
+Observed [main-node confirmed]:
+
+- both lanes keep visible `Cijk_*` entries and `mul_mat_*` families in the top
+  candidate list while decode-heavy rows increase in full runs.
+
+Implication [inference]:
+
+- The "kernel candidate narrowing" gate is now covered enough to move to the
+  next TODO: HSACO extraction target selection from `Cijk_*` candidates.
+
+Update 3:
+
+- HSACO mapping/extraction gate is now covered:
+  - map helper: `/home/limonene/ROCm-project/ROCm-MI25-build/map-kernel-candidates-to-hsaco.sh`
+  - extract helper: `/home/limonene/ROCm-project/ROCm-MI25-build/extract-hsaco-targets.sh`
+- mapping result:
+  - 4 `Cijk_*` candidates -> 3 matched to `*gfx900*.hsaco` (1 unmatched `...ISA900...`)
+- extracted target set:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/hsaco_targets_hsaco_candidate_map_kernel_candidates_rocprofv3_summary_gpt-oss_latest_20260325_011606__rocprofv3_summary_gpt-oss_latest_20260325_011645_20260325_013150_20260325_013452_20260325_013541`
+  - `3 files / 876K`
+
+Implication [inference]:
+
+- Disassembly can start from a constrained 3-file scope instead of scanning all
+  `*gfx900*.hsaco` assets.
+
+Update 4:
+
+- disasm signal summary on the extracted 3-file set is now available:
+  - helper: `/home/limonene/ROCm-project/ROCm-MI25-build/summarize-hsaco-disasm-signals.sh`
+  - summary:
+    - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/disasm_signal_summary_hsaco_targets_hsaco_candidate_map_kernel_candidates_rocprofv3_summary_gpt-oss_latest_20260325_011606__rocprofv3_summary_gpt-oss_latest_20260325_011645_20260325_013150_20260325_013452_20260325_013541_20260325_013821.txt`
+
+Observed [main-node confirmed]:
+
+- `dot4_positive_files=0`
+- `mfma_positive_files=0`
+- `packed_positive_files=1` (HH fallback)
+- `memory_positive_files=3`
+
+Implication [inference]:
+
+- Current fallback-gfx900 candidate set appears to rely on FMA-like + memory
+  access signatures, not dot4/mfma, under this probe.
+- This is enough to mark the "instruction feature observation" gate as covered.
