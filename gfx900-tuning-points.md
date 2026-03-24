@@ -1,6 +1,6 @@
 # Tensile gfx900 Tuning Points (MI25)
 
-Last updated: 2026-03-24
+Last updated: 2026-03-25
 Target: `ROCm-repos_AETS/Tensile`
 
 ## 1. Scope
@@ -278,6 +278,31 @@ Run:
 - `MODEL=gpt-oss:latest NUM_PREDICT_LIST=128 NUM_CTX_LIST=4096,6144,8192,12288 NUM_BATCH_LIST=512 TARGET_SHAPES='512x512x2880,2880x512x4096,4096x512x2880' KEEP_ALIVE_LIST=5m RUNS_PER_CASE=1 ./g4-gptoss-anchor-shape-sweep.sh`
 - summary:
   - `g4_gptoss_anchor_shape_sweep_gpt-oss_latest_20260324_040223.txt`
+
+## 9. Anchor-lane aggregate check (2026-03-25)
+
+Added aggregate helper (main-node workflow):
+
+- `/home/limonene/ROCm-project/ROCm-MI25-build/summarize-g4-anchor-lanes.sh`
+
+Latest aggregate outputs:
+
+- `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_anchor_lane_status_gpt-oss_latest_20260325_010009.txt`
+- `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_anchor_lane_status_gpt-oss_latest_20260325_010009.tsv`
+
+Observed:
+
+- baseline lane (`num_batch=512`): `ok_cases=5`, `direct_hits=5`
+- side lane (`num_batch=1024`): `ok_cases=3`, `direct_hits=3`
+- stream phase-window compare rows:
+  - all rows keep `direct/fallback/dispatch = 1`
+  - all rows keep `decode_signature_detected`
+
+Implication:
+
+- `prefill / decode` proxy split remains stable under baseline/side lane comparison.
+- Current next step stays the same: prioritize shape-conditioned Tensile investigation
+  after runtime/path evidence is fixed.
 
 Observed (all 4 ctx cases):
 
