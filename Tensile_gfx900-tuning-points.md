@@ -8,10 +8,50 @@ Target: `ROCm-repos_AETS/Tensile`
 Tensile is currently the most relevant low-level area for gfx900 tuning,
 because fallback catalog/hsaco asset reads are confirmed in runtime traces.
 
+### 1.1 Overlap topics with rocBLAS note (explicit list)
+
+The following topics currently appear in both notes and are intentionally
+tracked as shared context:
+
+1. anchor workload (`gpt-oss` anchor condition)
+2. baseline/side lane (`num_batch=512/1024`)
+3. `keep_alive` threshold and observability
+4. shape observability (top-shape families and lane shifts)
+5. runtime path / mixed stack facts
+6. direct/indirect dispatch wording and gate status
+
+### 1.2 Role split (authoritative owner)
+
+For maintenance going forward, this Tensile note is the primary location for:
+
+- fallback asset coverage and catalog-read map
+- HSACO candidate mapping/extraction and artifact narrowing
+- disassembly signal summaries (`dot4`/`packed`/memory-like signals)
+- queue-based kernel candidate narrowing from observed shapes
+
+The following topics are secondary here and primary in
+`../rocBLAS/rocBLAS_gfx900-tuning-points.md`:
+
+- runtime path / mixed stack resolution order
+- GEMM shape observation as a runtime tuning lane
+- client/runtime knob behavior (`num_thread`, `num_ctx`, `num_predict`, `keep_alive`)
+- baseline/side observability operations
+
+### 1.3 Wording guard (for README and cross-note consistency)
+
+- `direct dispatch`:
+  same-scenario evidence where rocBLAS/Tensile-named dispatch-level traces are visible.
+- `indirect link only`:
+  fallback + dispatch are both confirmed in the same scenario, but direct
+  rocBLAS/Tensile naming is absent.
+- `catalog-read evidence` and `dispatch evidence` are different gates and must
+  not be treated as interchangeable.
+
 Important caveat:
 
 - Current `fallback_confirmed` evidence is catalog-read level.
-- Dispatch-level confirmation is still pending.
+- `gpt-oss` anchor has direct dispatch confirmation, while tinyllama/qwen/deepseek
+  remain mostly indirect on the current GGUF path.
 
 ## 2. Priority order
 
