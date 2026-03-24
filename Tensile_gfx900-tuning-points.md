@@ -746,3 +746,57 @@ Interpretation:
   evidence layers to avoid over-claiming dispatch attribution.
 - [inference] This closes another observation cycle and keeps the next action as
   shape-priority evidence refinement, not immediate code/asset rewrite.
+
+## 18. Decode-side reproducibility rerun (2026-03-25 03:31-03:33 JST)
+
+Scope:
+
+- observation-only rerun (no Tensile asset edit, no source patch)
+- fixed anchor: `MODEL=gpt-oss:latest`, `ROCBLAS_LAYER=9`
+- lane comparison:
+  - baseline (`NUM_BATCH=512`)
+  - side (`NUM_BATCH=1024`)
+
+Executed:
+
+- phase-window sweeps:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_stream_phase_window_sweep_gpt-oss_latest_20260325_031811.txt`
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_stream_phase_window_sweep_gpt-oss_latest_20260325_032242.txt`
+- prefill/full split checks:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_prefill_decode_split_gpt-oss_latest_20260325_032955.txt`
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_prefill_decode_split_gpt-oss_latest_20260325_033100.txt`
+
+Observed [main-node confirmed]:
+
+- phase-window sweeps:
+  - baseline: `decode_signature_cases=5/5`
+  - side: `decode_signature_cases=5/5`
+  - both lanes keep:
+    - `direct_rocblas_or_tensile_dispatch=1`
+    - `fallback_confirmed=1`
+    - `dispatch_confirmed=1`
+    - `decode_kernel_tensile_like_rows=167`
+- prefill/full split:
+  - both lanes: `phase_split_status=prefill_dominant_signature`
+  - both lanes: `decode_delta_gemm_lines=0`
+  - both lanes: `decode_delta_target_shape_hits=0`
+
+- side lane target-shape correction rerun:
+  - summary:
+    - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_prefill_decode_split_gpt-oss_latest_20260325_033458.txt`
+  - corrected target set:
+    - `512x1024x2880`, `2880x1024x4096`, `4096x1024x2880`
+  - observed hits:
+    - `shape_512_1024_2880=288`
+    - `shape_2880_1024_4096=144`
+    - `shape_4096_1024_2880=144`
+  - `phase_split_status` remains `prefill_dominant_signature`
+
+Interpretation [inference]:
+
+- Decode-side signature is reproducible in the stream-window layer under the
+  current anchor/batch settings.
+- Prefill/full proxy remains prefill-dominant for this pair and should not be
+  merged into the same gate as stream-window decode evidence.
+- Catalog-read evidence and dispatch-side evidence remain separate by design;
+  this rerun strengthens reproducibility, not a new low-level mechanism claim.
