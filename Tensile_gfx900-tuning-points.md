@@ -681,3 +681,68 @@ Implication [inference]:
 - Current fallback-gfx900 candidate set appears to rely on FMA-like + memory
   access signatures, not dot4/mfma, under this probe.
 - This is enough to mark the "instruction feature observation" gate as covered.
+
+## 17. Observation-only deepening cycle (2026-03-25 02:23 JST)
+
+Scope:
+
+- No Tensile asset edit and no source patch in this cycle.
+- Goal is only deeper observability:
+  - top-shape re-observation in baseline/side lanes
+  - prefill/full and stream-window split comparison
+  - candidate -> hsaco -> disasm refresh under the same anchor
+
+Anchor lane re-observation [main-node confirmed]:
+
+- baseline summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_gptoss_anchor_shape_sweep_gpt-oss_latest_20260325_022355.txt`
+  - `direct/fallback/dispatch=1`, `gemm_lines=1002`
+- side summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_gptoss_anchor_shape_sweep_gpt-oss_latest_20260325_022435.txt`
+  - `direct/fallback/dispatch=1`, `gemm_lines=1336`
+
+Prefill/full proxy split [main-node confirmed]:
+
+- baseline:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_prefill_decode_split_gpt-oss_latest_20260325_022531.txt`
+- side:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_prefill_decode_split_gpt-oss_latest_20260325_022637.txt`
+- both lanes:
+  - `phase_split_status=prefill_dominant_signature`
+  - `decode_delta_gemm_lines=0`
+  - `decode_delta_target_shape_hits=0`
+
+Stream phase-window split [main-node confirmed]:
+
+- baseline sweep:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_stream_phase_window_sweep_gpt-oss_latest_20260325_022802.txt`
+- side sweep:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_stream_phase_window_sweep_gpt-oss_latest_20260325_022953.txt`
+- both lanes:
+  - `ok_cases=3`
+  - `decode_signature_cases=3`
+  - all rows `direct/fallback/dispatch=1`
+  - `decode_kernel_tensile_like_rows=167`
+
+Candidate to HSACO refresh [main-node confirmed]:
+
+- kernel candidates:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/kernel_candidates_rocprofv3_summary_gpt-oss_latest_20260325_022545__rocprofv3_summary_gpt-oss_latest_20260325_022614_20260325_023311.txt`
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/kernel_candidates_rocprofv3_summary_gpt-oss_latest_20260325_022651__rocprofv3_summary_gpt-oss_latest_20260325_022727_20260325_023315.txt`
+- hsaco map:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/hsaco_candidate_map_kernel_candidates_rocprofv3_summary_gpt-oss_latest_20260325_022545__rocprofv3_summary_gpt-oss_latest_20260325_022614_20260325_023311_20260325_023331.txt`
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/hsaco_candidate_map_kernel_candidates_rocprofv3_summary_gpt-oss_latest_20260325_022651__rocprofv3_summary_gpt-oss_latest_20260325_022727_20260325_023315_20260325_023336.txt`
+- map status:
+  - `total_candidates=4`, `matched_candidates=3`, unmatched `...ISA900...` persists
+- disasm signal summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/disasm_signal_summary_hsaco_targets_hsaco_candidate_map_kernel_candidates_rocprofv3_summary_gpt-oss_latest_20260325_022545__rocprofv3_summary_gpt-oss_latest_20260325_022614_20260325_023311_20260325_023331_20260325_023347_20260325_023354.txt`
+  - `dot4_positive_files=0`, `mfma_positive_files=0`, `packed_positive_files=1`, `memory_positive_files=3`
+
+Interpretation:
+
+- [inference] Under the current anchor, observability remains stable without any
+  low-level modification.
+- [inference] Treat `prefill/full proxy` and `stream phase-window` as separate
+  evidence layers to avoid over-claiming dispatch attribution.
+- [inference] This closes another observation cycle and keeps the next action as
+  shape-priority evidence refinement, not immediate code/asset rewrite.
