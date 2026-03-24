@@ -522,3 +522,50 @@ Implication:
 
 - The keep-alive threshold is lane-agnostic in current observations.
 - Use `keep_alive>=10s` as a common prerequisite for stable Tensile-linked stream evidence.
+
+## 16. Non-dot4 focus confirmation + shape-first queue (2026-03-25)
+
+Inputs:
+
+- rocBLAS gemm dtype summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/rocblas_gemm_dtype_summary_rocblas_gemm_shapes_g4_rocblas_trace_gpt-oss_latest_20260324_045255_20260324_045658_20260325_010632.txt`
+- fallback type summary (catalog-read side):
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/fallback_type_summary_tinyllama_20260324.txt`
+
+Observed:
+
+- [main-node confirmed] In the current direct-dispatch anchor (`gpt-oss`),
+  gemm rows are:
+  - `non_dot4_like=501/501` (100%)
+  - `int8_or_i32_like=0/501`
+- [main-node confirmed] Catalog-read summaries still include int8-related types
+  (`Type_4xi8I_HPA`, `Type_I8I_HPA`) together with HH/HS/HPA families.
+
+Interpretation:
+
+- [inference] In the current LLM anchor lane, the active dispatch-visible work is
+  dominated by BF16/F16/F32 signatures, while some int8 families remain only as
+  catalog-read evidence in this dataset.
+- This supports the strategy of prioritizing non-dot4 shape families first,
+  then revisiting int8 families only when direct dispatch evidence appears.
+
+Shape-first queue for Tensile-side inspection:
+
+1. Queue-A (baseline core, highest frequency)
+   - `512x512x2880`
+   - `2880x512x4096`
+   - `4096x512x2880`
+2. Queue-B (decode-tail candidates)
+   - `512x93x2880`
+   - `32x512x2880`
+3. Queue-C (batched-ex sensitivity family)
+   - `4608x512x64`
+   - `64x512x4608`
+   - `8192x512x64`
+   - `64x512x8192`
+
+Operational next step:
+
+- Split per-shape observation notes by Queue-A/B/C and keep the same anchor
+  settings (`gpt-oss`, baseline512, `ROCBLAS_LAYER=9`, `keep_alive>=10s`).
+- Promote only stable findings to low-level asset/kernel inspection.
