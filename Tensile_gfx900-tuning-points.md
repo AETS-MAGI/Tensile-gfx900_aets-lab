@@ -838,3 +838,43 @@ Interpretation [inference]:
 - baseline/side parity is now confirmed through
   candidate -> hsaco -> disasm layers for the K1-entry set.
 - This reduces entry ambiguity before any future shape-scoped low-level A/B step.
+
+## 20. Runtime-path A/B impact on fallback evidence (2026-03-25 14 JST)
+
+Scope:
+
+- keep anchor fixed (`gpt-oss`, `NUM_BATCH=512`, `ROCBLAS_LAYER=9`).
+- compare runtime path only via `ROCBLAS_TENSILE_LIBPATH`.
+- no Tensile source/asset rewrite in this step.
+
+Evidence [main-node confirmed]:
+
+- AETS lane (`.../rocblas-install/lib/rocblas/library`):
+  - fallback/dispatch/direct all observed in:
+    - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_link_summary_gpt-oss_latest_20260325_135852.txt`
+  - key fallback counts:
+    - `fallback_dat_openat=56`
+    - `fallback_hsaco_openat=56`
+- system lane (`/opt/rocm-7.2.0/lib/rocblas/library`):
+  - strace raw:
+    - `/home/limonene/ROCm-project/vega_path_check_logs_raw/g4_strace_openat_gpt-oss_latest_20260325_140141.log*`
+  - rocprof summary:
+    - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/rocprofv3_summary_gpt-oss_latest_20260325_140345.txt`
+  - observed:
+    - `fallback_dat_openat=0`
+    - `fallback_hsaco_openat=0`
+    - `dispatch_confirmed=0` (for this run)
+- consolidated A/B table:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_runtime_path_ab_compare_20260325_140536.tsv`
+
+Tooling note:
+
+- `g4-fallback-strace-check.sh` currently exits before summary emission when
+  fallback matches are zero, so system-lane fallback counts were computed from
+  raw strace logs.
+
+Interpretation [inference]:
+
+- For the fixed anchor, fallback catalog visibility is runtime-path sensitive.
+- Keep catalog-read evidence and dispatch evidence separated; this section does
+  not claim a strict kernel-level 1:1 mapping.
