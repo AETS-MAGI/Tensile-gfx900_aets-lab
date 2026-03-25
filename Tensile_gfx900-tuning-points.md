@@ -987,3 +987,37 @@ Interpretation [inference]:
   metrics move.
 - Catalog-read evidence and dispatch evidence remain separate layers; strict
   1:1 kernel-level mapping is still pending.
+
+## 25. Single-knob control reflection (`keep_alive 5m vs 0s`) (2026-03-25 18 JST)
+
+Scope:
+
+- keep shape gate and lane split unchanged
+- vary only `KEEP_ALIVE` for control comparison
+- keep `NUM_THREAD=6` fixed
+- no Tensile source/asset edits
+
+Evidence [main-node confirmed]:
+
+- ka5m summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_repeat_summary_k1_entry_20260325_1shape_ka5m_20260325_185004.tsv`
+- ka0s summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_repeat_summary_k1_entry_20260325_1shape_ka0s_20260325_185004.tsv`
+- compare:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_control_compare_keep_alive_5m_vs_0s_20260325_1850.tsv`
+
+Observed [main-node confirmed]:
+
+- AETS lane invariants partly hold:
+  - `shape_hits_mode=192` remains unchanged
+  - fallback/direct class remains `1`
+  - but `dispatch_mode` changes `1 -> 0`
+  - and `phase_set` changes to `unavailable`
+- system lane remains unchanged (`unavailable`, shape hits `0`)
+
+Interpretation [inference]:
+
+- `KEEP_ALIVE=0s` improves runtime metrics in this control, but it does not
+  preserve the full observability class used in the current gate.
+- Keep catalog-read and dispatch evidence separated; this run should not be
+  interpreted as a stronger kernel-level mapping result.
