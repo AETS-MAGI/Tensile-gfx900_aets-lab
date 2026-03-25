@@ -800,3 +800,41 @@ Interpretation [inference]:
   merged into the same gate as stream-window decode evidence.
 - Catalog-read evidence and dispatch-side evidence remain separate by design;
   this rerun strengthens reproducibility, not a new low-level mechanism claim.
+
+## 19. K1-entry HSACO/disasm parity check (2026-03-25 11 JST)
+
+Scope:
+
+- observation-only parity check for baseline/side lanes at HSACO/disasm layer.
+- no Tensile source/asset rewrite in this step.
+
+Executed [main-node confirmed]:
+
+- baseline lane:
+  - hsaco map:
+    - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/hsaco_candidate_map_kernel_candidates_rocprofv3_summary_gpt-oss_latest_20260325_092328__rocprofv3_summary_gpt-oss_latest_20260325_092357_20260325_110634_20260325_110635.tsv`
+  - disasm summary:
+    - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/disasm_signal_summary_hsaco_targets_hsaco_candidate_map_kernel_candidates_rocprofv3_summary_gpt-oss_latest_20260325_092328__rocprofv3_summary_gpt-oss_latest_20260325_092357_20260325_110634_20260325_110635_20260325_110812_20260325_110821.txt`
+- side lane:
+  - hsaco map:
+    - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/hsaco_candidate_map_kernel_candidates_rocprofv3_summary_gpt-oss_latest_20260325_092433__rocprofv3_summary_gpt-oss_latest_20260325_092510_20260325_110636_20260325_110636.tsv`
+  - disasm summary:
+    - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/disasm_signal_summary_hsaco_targets_hsaco_candidate_map_kernel_candidates_rocprofv3_summary_gpt-oss_latest_20260325_092433__rocprofv3_summary_gpt-oss_latest_20260325_092510_20260325_110636_20260325_110636_20260325_110812_20260325_110822.txt`
+
+Observed [main-node confirmed]:
+
+- both lanes:
+  - `total_candidates=4`, `matched_candidates=3`
+  - unmatched stays `...SB...ISA900...`
+- disasm aggregate parity:
+  - `total_files=3`
+  - `dot4_positive_files=0`
+  - `mfma_positive_files=0`
+  - `packed_positive_files=1`
+  - `memory_positive_files=3`
+
+Interpretation [inference]:
+
+- baseline/side parity is now confirmed through
+  candidate -> hsaco -> disasm layers for the K1-entry set.
+- This reduces entry ambiguity before any future shape-scoped low-level A/B step.
