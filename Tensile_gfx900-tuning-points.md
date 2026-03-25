@@ -1197,3 +1197,34 @@ Interpretation [inference]:
   HSACO identity at the Tensile-observation layer.
 - Catalog-read and dispatch evidence separation remains unchanged; strict
   kernel-level 1:1 mapping is still pending.
+
+## 31. Candidate/HSACO reflection (`num_ctx 8192 vs 12288`, log-reuse analysis) (2026-03-26 06 JST)
+
+Scope:
+
+- reuse C4 `ctx8192`/`ctx12288` run artifacts only (3 repeats each)
+- perform candidate and HSACO map comparison without new probes
+- no Tensile source/asset edits
+
+Evidence [main-node confirmed]:
+
+- candidate compare:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_cijk_candidate_compare_num_ctx_8192_vs_12288_20260326_0640.tsv`
+- hsaco map compare:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_hsaco_map_compare_num_ctx_8192_vs_12288_20260326_0640.tsv`
+
+Observed [main-node confirmed]:
+
+- tracked `Cijk_*` candidate counts are unchanged between `ctx8192` and `ctx12288`
+  (BBS/HSS_BH_GB both delta `0`).
+- `tensile_like_rows_total` is unchanged (`501 vs 501`).
+- HSACO map `match_count` is unchanged for all 2 tracked kernels
+  (`changed_match_count_kernels=0`).
+
+Interpretation [inference]:
+
+- In this anchor, `NUM_CTX` change (`8192 -> 12288`) does not alter candidate or
+  HSACO identity at the Tensile-observation layer.
+- Catalog-read and dispatch evidence separation remains unchanged; strict
+  kernel-level 1:1 mapping is still pending.
+
