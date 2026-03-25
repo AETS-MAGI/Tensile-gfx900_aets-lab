@@ -1228,3 +1228,40 @@ Interpretation [inference]:
 - Catalog-read and dispatch evidence separation remains unchanged; strict
   kernel-level 1:1 mapping is still pending.
 
+## 32. Single-knob reflection (`num_thread 6 vs 7`) (2026-03-26 04 JST)
+
+Scope:
+
+- keep shape gate and lane split unchanged
+- vary only `NUM_THREAD` for control comparison
+- keep `NUM_PREDICT=128`, `NUM_CTX=8192`, `KEEP_ALIVE=5m` fixed
+- no Tensile source/asset edits
+
+Evidence [main-node confirmed]:
+
+- nt6c summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_repeat_summary_k1_entry_20260326_1shape_nt6c_20260326_045050.tsv`
+- nt7 summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_repeat_summary_k1_entry_20260326_1shape_nt7_20260326_045051.tsv`
+- compare:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_control_compare_num_thread_6_vs_7_20260326_0452.tsv`
+
+Observed [main-node confirmed]:
+
+- AETS lane observability class remains unchanged:
+  - `decode_signature_detected`
+  - `shape_hits=192`
+  - `fallback/dispatch/direct=1/1/1`
+- system lane remains unchanged:
+  - `unavailable`, `shape_hits=0`, `dispatch=0`
+- AETS runtime metrics improve at `NUM_THREAD=7` in this anchor.
+- `kernel_dispatch_rows` has one outlier run in nt7 set (`88998`), while
+  gemm/shape/dispatch-class fields remain unchanged.
+
+Interpretation [inference]:
+
+- This control is consistent with observation-class stability at Tensile
+  observation layer.
+- Catalog-read and dispatch evidence separation remains unchanged; strict
+  kernel-level 1:1 mapping remains pending.
+
