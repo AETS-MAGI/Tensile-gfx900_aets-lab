@@ -930,3 +930,27 @@ Interpretation [inference]:
 - Catalog-read observability difference between lanes is repeat-stable for the
   one-shape anchor gate.
 - Causality remains unexpanded (no 1:1 kernel mapping claim).
+
+## 23. Single-knob control reflection (`num_predict 128 vs 256`) (2026-03-25 14 JST)
+
+Scope:
+
+- keep shape gate and lane split unchanged
+- vary only `NUM_PREDICT` for control comparison
+- no Tensile source/asset edits
+
+Evidence [main-node confirmed]:
+
+- compare TSV:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_control_compare_num_predict_128_vs_256_20260325_144910.tsv`
+- lane invariants:
+  - AETS: `decode_signature_detected`, `shape_hits_mode=192`
+  - system: `unavailable`, `shape_hits_mode=0`
+- fallback/gemm observability pattern remains lane-separated as before.
+
+Interpretation [inference]:
+
+- This control run keeps Tensile-side observability class unchanged while
+  runtime cost metrics move with `NUM_PREDICT`.
+- Catalog-read and dispatch evidence are still recorded as separate layers;
+  strict kernel-level mapping is not newly claimed.
