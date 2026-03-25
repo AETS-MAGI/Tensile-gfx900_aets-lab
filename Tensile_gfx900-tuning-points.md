@@ -1021,3 +1021,36 @@ Interpretation [inference]:
   preserve the full observability class used in the current gate.
 - Keep catalog-read and dispatch evidence separated; this run should not be
   interpreted as a stronger kernel-level mapping result.
+
+## 26. Single-knob control reflection (`num_ctx 8192 vs 12288`) (2026-03-25 19 JST)
+
+Scope:
+
+- keep shape gate and lane split unchanged
+- vary only `NUM_CTX` for control comparison
+- keep `NUM_THREAD=6` and `KEEP_ALIVE=5m` fixed
+- no Tensile source/asset edits
+
+Evidence [main-node confirmed]:
+
+- ctx8192 summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_repeat_summary_k1_entry_20260325_1shape_ctx8192_20260325_191904.tsv`
+- ctx12288 summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_repeat_summary_k1_entry_20260325_1shape_ctx12288_20260325_191904.tsv`
+- compare:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_control_compare_num_ctx_8192_vs_12288_20260325_1919.tsv`
+
+Observed [main-node confirmed]:
+
+- AETS lane observability class is unchanged:
+  - `decode_signature_detected`, `shape_hits=192`, `fallback/dispatch/direct=1/1/1`
+- system lane remains unchanged:
+  - `unavailable`, `shape_hits=0`, `dispatch=0`
+- runtime metrics show trade-off behavior:
+  - AETS `ttft/total` slightly up, `tok_s` slightly up at `NUM_CTX=12288`
+
+Interpretation [inference]:
+
+- This control keeps Tensile-side observability class stable and is valid for
+  continued gated comparisons.
+- Catalog-read and dispatch evidence separation remains unchanged.
