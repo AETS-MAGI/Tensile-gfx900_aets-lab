@@ -954,3 +954,36 @@ Interpretation [inference]:
   runtime cost metrics move with `NUM_PREDICT`.
 - Catalog-read and dispatch evidence are still recorded as separate layers;
   strict kernel-level mapping is not newly claimed.
+
+## 24. Single-knob control reflection (`num_thread 4 vs 6`) (2026-03-25 15 JST)
+
+Scope:
+
+- keep shape gate and lane split unchanged
+- vary only `NUM_THREAD` for control comparison
+- no Tensile source/asset edits
+
+Evidence [main-node confirmed]:
+
+- nt4 summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_repeat_summary_k1_entry_20260325_1shape_nt4_20260325_155820.tsv`
+- nt6 summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_repeat_summary_k1_entry_20260325_1shape_nt6_20260325_155820.tsv`
+- compare:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_control_compare_num_thread_4_vs_6_20260325_1559.tsv`
+
+Observed [main-node confirmed]:
+
+- lane invariants remain unchanged:
+  - AETS: `decode_signature_detected`, `shape_hits_mode=192`
+  - system: `unavailable`, `shape_hits_mode=0`
+  - fallback/dispatch/direct class per lane is unchanged
+- metric deltas (AETS) indicate lower latency and slightly higher throughput on
+  `NUM_THREAD=6` vs `4`.
+
+Interpretation [inference]:
+
+- This control keeps the Tensile-side observability class stable while runtime
+  metrics move.
+- Catalog-read evidence and dispatch evidence remain separate layers; strict
+  1:1 kernel-level mapping is still pending.
