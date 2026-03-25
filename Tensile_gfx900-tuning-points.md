@@ -1132,3 +1132,38 @@ Interpretation [inference]:
 - Catalog-read and dispatch evidence remain separate layers; strict kernel-level
   1:1 mapping remains pending.
 - This note is anchor-scoped (`gpt-oss:latest`) and not a cross-workload claim.
+
+## 29. Single-knob control reflection (`num_thread 6 vs 8`) (2026-03-26 04 JST)
+
+Scope:
+
+- keep shape gate and lane split unchanged
+- vary only `NUM_THREAD` for control comparison
+- keep `NUM_PREDICT=128`, `NUM_CTX=8192`, `KEEP_ALIVE=5m` fixed
+- no Tensile source/asset edits
+
+Evidence [main-node confirmed]:
+
+- nt6b summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_repeat_summary_k1_entry_20260326_1shape_nt6b_20260326_042113.tsv`
+- nt8 summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_repeat_summary_k1_entry_20260326_1shape_nt8_20260326_042113.tsv`
+- compare:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_control_compare_num_thread_6_vs_8_20260326_0421.tsv`
+
+Observed [main-node confirmed]:
+
+- AETS lane observability class remains unchanged:
+  - `decode_signature_detected`
+  - `shape_hits=192`
+  - `fallback/dispatch/direct=1/1/1`
+- system lane remains unchanged:
+  - `unavailable`, `shape_hits=0`, `dispatch=0`
+- AETS runtime metric differences are small (`ttft/total` slight down, `tok_s` slight up).
+
+Interpretation [inference]:
+
+- This control keeps the current Tensile-side observability class stable, with
+  only marginal AETS metric movement from `NUM_THREAD=6` to `8`.
+- Catalog-read and dispatch evidence remain separate layers; strict kernel-level
+  1:1 mapping remains pending.
