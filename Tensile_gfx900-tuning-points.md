@@ -1167,3 +1167,33 @@ Interpretation [inference]:
   only marginal AETS metric movement from `NUM_THREAD=6` to `8`.
 - Catalog-read and dispatch evidence remain separate layers; strict kernel-level
   1:1 mapping remains pending.
+
+## 30. Candidate/HSACO reflection (`num_thread 6 vs 8`, log-reuse analysis) (2026-03-26 04 JST)
+
+Scope:
+
+- reuse C7 `nt6`/`nt8` run artifacts only (3 repeats each)
+- perform candidate and HSACO map comparison without new probes
+- no Tensile source/asset edits
+
+Evidence [main-node confirmed]:
+
+- candidate compare:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_cijk_candidate_compare_num_thread_6_vs_8_20260326_0429.tsv`
+- hsaco map compare:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_hsaco_map_compare_num_thread_6_vs_8_20260326_0429.tsv`
+
+Observed [main-node confirmed]:
+
+- tracked `Cijk_*` candidate counts are unchanged between `nt6` and `nt8`
+  (BBS/HB_GB/HSS/SB all delta `0`).
+- `tensile_like_rows_total` is unchanged (`501 vs 501`).
+- HSACO map `match_count` is unchanged for all 4 tracked kernels
+  (`changed_match_count_kernels=0`).
+
+Interpretation [inference]:
+
+- In this anchor, `NUM_THREAD` change (`6 -> 8`) does not alter candidate or
+  HSACO identity at the Tensile-observation layer.
+- Catalog-read and dispatch evidence separation remains unchanged; strict
+  kernel-level 1:1 mapping is still pending.
