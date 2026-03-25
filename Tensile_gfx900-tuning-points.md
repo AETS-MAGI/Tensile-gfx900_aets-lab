@@ -908,3 +908,25 @@ Interpretation [inference]:
   observability remain aligned with runtime path selection.
 - This section records path-level evidence only; strict dispatch-to-catalog
   1:1 mapping is still pending.
+
+## 22. One-shape repeat consolidation (2026-03-25 14 JST)
+
+Scope:
+
+- consolidate 3 repeated one-shape runs under same anchor and lane split.
+- no Tensile source or asset edits.
+
+Evidence [main-node confirmed]:
+
+- repeat summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_repeat_summary_k1_entry_20260325_1shape_20260325_143343.tsv`
+- key lane stability:
+  - AETS lane: `fallback_mode=1`, `dispatch_mode=1`, `direct_mode=1`, `shape_hits_mode=192`
+  - system lane: `fallback_mode=0`, `dispatch_mode=0`, `direct_mode=0`, `shape_hits_mode=0`
+  - all corresponding `all_same=1`
+
+Interpretation [inference]:
+
+- Catalog-read observability difference between lanes is repeat-stable for the
+  one-shape anchor gate.
+- Causality remains unexpanded (no 1:1 kernel mapping claim).
