@@ -878,3 +878,33 @@ Interpretation [inference]:
 - For the fixed anchor, fallback catalog visibility is runtime-path sensitive.
 - Keep catalog-read evidence and dispatch evidence separated; this section does
   not claim a strict kernel-level 1:1 mapping.
+
+## 21. One-shape entry loop reflection (2026-03-25 14 JST)
+
+Scope:
+
+- consume one-shape K1 loop results for Tensile-side observability tracking.
+- no Tensile source or asset edits.
+
+Evidence [main-node confirmed]:
+
+- loop outputs:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_loop_k1_entry_20260325_1shape.txt`
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_loop_k1_entry_20260325_1shape.tsv`
+- target shape:
+  - `512x512x2880`
+- AETS lane:
+  - `fallback_dat_openat=56`
+  - `fallback_hsaco_openat=56`
+  - `shape_target_hits=192`
+- system lane:
+  - `fallback_dat_openat=0`
+  - `fallback_hsaco_openat=0`
+  - `shape_target_hits=0`
+
+Interpretation [inference]:
+
+- For this one-shape anchor loop, fallback catalog visibility and shape
+  observability remain aligned with runtime path selection.
+- This section records path-level evidence only; strict dispatch-to-catalog
+  1:1 mapping is still pending.
