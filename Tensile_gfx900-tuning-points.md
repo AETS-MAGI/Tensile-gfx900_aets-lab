@@ -1054,3 +1054,81 @@ Interpretation [inference]:
 - This control keeps Tensile-side observability class stable and is valid for
   continued gated comparisons.
 - Catalog-read and dispatch evidence separation remains unchanged.
+
+## 27. Single-knob control reflection (`prompt profile short/math/code`) (2026-03-26 03 JST)
+
+Scope:
+
+- keep shape gate and lane split unchanged
+- vary only prompt profile (`short/math/code`) for control comparison
+- keep `NUM_THREAD=6`, `KEEP_ALIVE=5m`, `NUM_CTX=8192` fixed
+- no Tensile source/asset edits
+
+Evidence [main-node confirmed]:
+
+- short summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_repeat_summary_k1_entry_20260326_1shape_prompt_short_20260326_032542.tsv`
+- math summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_repeat_summary_k1_entry_20260326_1shape_prompt_math_20260326_033152.tsv`
+- code summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_repeat_summary_k1_entry_20260326_1shape_prompt_code_20260326_033800.tsv`
+- profile overview:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_prompt_profile_overview_20260326_0340.tsv`
+- compares:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_control_compare_prompt_short_vs_math_20260326_0340.tsv`
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_control_compare_prompt_short_vs_code_20260326_0340.tsv`
+
+Observed [main-node confirmed]:
+
+- AETS lane observability class remains unchanged across profiles:
+  - `decode_signature_detected`
+  - `shape_hits=192`
+  - `fallback/dispatch/direct=1/1/1`
+- system lane remains unchanged:
+  - `unavailable`, `shape_hits=0`, `dispatch=0`
+- runtime metrics vary by profile while the above class remains stable.
+
+Interpretation [inference]:
+
+- Prompt profile changes runtime metrics but does not change the current
+  Tensile-side observability class on the anchor gate.
+- Keep catalog-read evidence and dispatch evidence separated; strict kernel-level
+  1:1 mapping remains pending.
+- This note is anchor-scoped (`gpt-oss:latest`) and not a cross-workload claim.
+
+## 28. Single-knob control reflection (`num_predict 128 vs 512`, thread6 anchor) (2026-03-26 04 JST)
+
+Scope:
+
+- keep shape gate and lane split unchanged
+- vary only `NUM_PREDICT` for control comparison
+- keep `NUM_THREAD=6`, `KEEP_ALIVE=5m`, `NUM_CTX=8192` fixed
+- no Tensile source/asset edits
+
+Evidence [main-node confirmed]:
+
+- np128_t6 summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_repeat_summary_k1_entry_20260326_1shape_np128_t6_20260326_040402.tsv`
+- np512_t6 summary:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_repeat_summary_k1_entry_20260326_1shape_np512_t6_20260326_040402.tsv`
+- compare:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_k1_single_shape_control_compare_num_predict_128_vs_512_t6_20260326_0404.tsv`
+
+Observed [main-node confirmed]:
+
+- AETS lane observability class remains unchanged:
+  - `decode_signature_detected`
+  - `shape_hits=192`
+  - `fallback/dispatch/direct=1/1/1`
+- system lane remains unchanged:
+  - `unavailable`, `shape_hits=0`, `dispatch=0`
+- runtime metrics move significantly with `NUM_PREDICT` increase:
+  - AETS `total_ms` increases, `tok_s` decreases
+
+Interpretation [inference]:
+
+- This control confirms that decode-length increase can raise runtime cost
+  without changing the current Tensile-side observability class.
+- Catalog-read and dispatch evidence remain separate layers; strict kernel-level
+  1:1 mapping remains pending.
+- This note is anchor-scoped (`gpt-oss:latest`) and not a cross-workload claim.
