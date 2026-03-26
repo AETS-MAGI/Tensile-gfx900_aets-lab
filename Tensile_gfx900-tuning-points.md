@@ -1265,3 +1265,75 @@ Interpretation [inference]:
 - Catalog-read and dispatch evidence separation remains unchanged; strict
   kernel-level 1:1 mapping remains pending.
 
+## 33. Workload visibility matrix reflection (`C12`, model-only delta) (2026-03-26 08 JST)
+
+Scope:
+
+- keep anchor knobs fixed:
+  - `NUM_BATCH=512`, `NUM_CTX=8192`, `NUM_THREAD=6`
+  - `NUM_PREDICT=128`, `KEEP_ALIVE=5m`, `ROCBLAS_LAYER=9`
+  - `prompt_profile=short`
+- vary model only:
+  - `gpt-oss:latest`, `tinyllama:latest`, `qwen2.5:7b`, `deepseek-r1:14b`
+- no Tensile source/asset edits
+
+Evidence [main-node confirmed]:
+
+- sweep:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_workload_path_sweep_20260326_081421.tsv`
+- matrix:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_c12_workload_visibility_matrix_20260326_081421.tsv`
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_c12_workload_visibility_matrix_20260326_081421.txt`
+
+Observed [main-node confirmed]:
+
+- all 4 workloads are `fallback=1` and `dispatch=1` under the fixed anchor.
+- direct visibility differs by workload:
+  - `gpt-oss`: `direct_rocblas_or_tensile_dispatch=1`
+  - `tinyllama/qwen/deepseek`: `direct_rocblas_or_tensile_dispatch=0`
+- non-gpt-oss rows are `link_status=indirect_link_only_same_scenario`.
+
+Interpretation [inference]:
+
+- At current Tensile-observation layer, this matrix is consistent with
+  workload-dependent direct visibility.
+- It does not collapse catalog-read and dispatch into a strict 1:1 mapping.
+- Kernel-level causal mapping remains pending.
+
+## 34. Catalog-read vs dispatch correlation reflection (`C13`, phase-window anchored) (2026-03-26 14 JST)
+
+Scope:
+
+- reuse C13 phase-window sweeps and summarize correlation at Tensile-observation
+  layer only
+- no Tensile source edits, no asset replacement
+- keep boundary:
+  - observed correlation = yes
+  - strict kernel-level mapping = pending
+
+Evidence [main-node confirmed]:
+
+- correlation table:
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_c13_catalog_dispatch_phase_correlation_20260326_140431.tsv`
+  - `/home/limonene/ROCm-project/vega_path_check_logs_raw/summaries/g4_c13_catalog_dispatch_phase_correlation_20260326_140431.txt`
+
+Observed [main-node confirmed]:
+
+- `total_rows=12` (`NUM_PREDICT={64,128,256}` x 4 workloads)
+- all rows show `fallback_confirmed=1` and `dispatch_confirmed=1`
+- direct visibility split:
+  - `gpt-oss`: `direct=1` (3 rows), `phase=decode_signature_detected`
+  - `tinyllama/qwen/deepseek`: `direct=0` (9 rows), `phase=prefill_dominant_signature`
+- fallback catalog counters differ by workload group but are stable within group:
+  - `gpt-oss`: `fallback_dat_openat=57`, `fallback_hsaco_openat=57`
+  - GGUF-family: `fallback_dat_openat=54`, `fallback_hsaco_openat=54`
+- `kernel_dispatch_rows` is non-zero in both groups
+  (direct range `21376..25223`, indirect range `24123..59611`)
+
+Interpretation [inference]:
+
+- C13 is consistent with a workload-dependent visibility split on top of a
+  shared fallback/dispatch presence.
+- At this stage, catalog-read + dispatch co-observation is treated as
+  correlation evidence only; strict per-catalog-item to per-kernel causal
+  mapping remains pending.
